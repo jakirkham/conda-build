@@ -293,7 +293,7 @@ def conda_build_vars(prefix, config):
         'SRC_DIR': src_dir,
         'HTTPS_PROXY': os.getenv('HTTPS_PROXY', ''),
         'HTTP_PROXY': os.getenv('HTTP_PROXY', ''),
-        'REQUESTS_CA_BUNDLE': os.getenv('REQUESTS_CA_BUNDLE', ''),
+        'REQUESTS_CA_BUNDLE': os.getenv('REQUESTS_CA_BUNDLE'),
         'DIRTY': '1' if config.dirty else '',
         'ROOT': root_dir,
     }
