@@ -106,11 +106,12 @@ def load_setup_py_data(m, setup_file='setup.py', from_recipe_dir=False, recipe_d
     # we must copy the script into the work folder to avoid incompatible pyc files
     origin_setup_script = os.path.join(os.path.dirname(__file__), '_load_setup_py_data.py')
     dest_setup_script = os.path.join(m.config.work_dir, '_load_setup_py_data.py')
+    work_dir = os.path.join(m.config.work_dir, os.path.dirname(setup_file))
     copy_into(origin_setup_script, dest_setup_script)
     env = get_environ(m)
     env["CONDA_BUILD_STATE"] = "RENDER"
     if os.path.isfile(m.config.build_python):
-        args = [m.config.build_python, dest_setup_script, m.config.work_dir, setup_file]
+        args = [m.config.build_python, dest_setup_script, work_dir, setup_file]
         if from_recipe_dir:
             assert recipe_dir, 'recipe_dir must be set if from_recipe_dir is True'
             args.append('--from-recipe-dir')
@@ -119,14 +120,14 @@ def load_setup_py_data(m, setup_file='setup.py', from_recipe_dir=False, recipe_d
             args.append('--permit-undefined-jinja')
         check_call_env(args, env=env)
         # this is a file that the subprocess will have written
-        with open(os.path.join(m.config.work_dir, 'conda_build_loaded_setup_py.json')) as f:
+        with open(os.path.join(work_dir, 'conda_build_loaded_setup_py.json')) as f:
             _setuptools_data = json.load(f)
     else:
         try:
             _setuptools_data = _load_setup_py_data.load_setup_py_data(setup_file,
                                                     from_recipe_dir=from_recipe_dir,
                                                     recipe_dir=recipe_dir,
-                                                    work_dir=m.config.work_dir,
+                                                    work_dir=work_dir,
                                                     permit_undefined_jinja=permit_undefined_jinja)
         except (TypeError, OSError):
             # setup.py file doesn't yet exist.  Will get picked up in future parsings
@@ -141,7 +142,7 @@ def load_setup_py_data(m, setup_file='setup.py', from_recipe_dir=False, recipe_d
                 raise CondaBuildException("Could not render recipe - need modules "
                                         "installed in root env.  Import error was \"{}\"".format(e))
     # cleanup: we must leave the source tree empty unless the source code is already present
-    rm_rf(os.path.join(m.config.work_dir, '_load_setup_py_data.py'))
+    rm_rf(os.path.join(work_dir, '_load_setup_py_data.py'))
     return _setuptools_data if _setuptools_data else {}
 
 
